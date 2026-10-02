@@ -114,7 +114,7 @@ a { color: inherit; }
   transition: background-color 300ms ease, border-color 300ms ease;
 }
 .nav.scrolled { background: rgba(11,22,40,.88); border-bottom-color: var(--color-borde); }
-.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; width: 100%; padding: 0 clamp(20px, 4vw, 48px); }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
 .brand img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(242,193,78,.45)); }
 .brand span { font-family: var(--font-display); font-weight: 600; font-size: .95rem; letter-spacing: .04em; }
@@ -125,7 +125,6 @@ a { color: inherit; }
   padding: 12px 4px; transition: color 200ms;
 }
 .nav-links a:hover { color: var(--color-dorado); }
-.nav-links { margin-left: auto; }
 .burger {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 48px; min-height: 48px; background: transparent; border: none; cursor: pointer;
@@ -565,7 +564,7 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
 
 <!-- ============ NAV ============ -->
 <header class="nav" id="nav">
-  <div class="wrap nav-inner">
+  <div class="nav-inner">
     <a class="brand" href="#inicio" aria-label="Monte de Sion — inicio">
       <img src="assets/logo-monte-de-sion.png" alt="Logo Iglesia Monte de Sion" width="40" height="40">
       <span id="brand-nombre">Monte de Sion</span>
