@@ -35,7 +35,7 @@
 
 /* ============ BASE ============ */
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   margin: 0;
   background: var(--color-noche);
@@ -372,39 +372,48 @@ body.loaded .hero [data-enter] {
 }
 
 /* ============ GALERÍA 3D — carrusel giratorio ============ */
+/* El anillo 3D se desborda en horizontal al girar: se recorta en los
+   bordes de la sección para que nunca ensanche la página en móvil. */
+#galeria { overflow-x: clip; }
 .carrusel3d {
-  --foto-w: 260px; --radio: 150px;
-  perspective: 1100px;
+  --foto-w: 240px; --radio: 250px;
+  perspective: 1200px;
   height: clamp(240px, 64vw, 380px);
   display: flex; align-items: center; justify-content: center;
 }
-@media (min-width: 720px) { .carrusel3d { --foto-w: 340px; --radio: 196px; } }
+@media (min-width: 720px) { .carrusel3d { --foto-w: 320px; --radio: 332px; } }
 .carrusel3d-anillo {
   position: relative; width: var(--foto-w); height: calc(var(--foto-w) * .667);
   transform-style: preserve-3d;
-  animation: giro3d 36s ease-in-out infinite;
+  animation: giro3d 24.5s ease-in-out infinite;
   will-change: transform;
 }
-/* Giro escalonado: cada foto pasa al frente, se detiene unos segundos
-   y luego el anillo avanza 120° hasta la siguiente. Así siempre hay
-   una foto frontal y legible, con las otras dos como apoyo lateral. */
+/* Giro escalonado con 7 fotos: cada una pasa al frente, hace una pausa
+   breve y el anillo avanza 51.43° (360/7) hasta la siguiente. El ciclo
+   completo dura 24.5 s: unos 3.5 s por foto, más ágil que antes. */
 @keyframes giro3d {
-  0%, 23% { transform: rotateY(0deg); }
-  33.333%, 56.333% { transform: rotateY(-120deg); }
-  66.666%, 89.666% { transform: rotateY(-240deg); }
+  0%, 7.9% { transform: rotateY(0deg); }
+  14.3%, 22.2% { transform: rotateY(-51.43deg); }
+  28.6%, 36.5% { transform: rotateY(-102.86deg); }
+  42.9%, 50.8% { transform: rotateY(-154.29deg); }
+  57.1%, 65% { transform: rotateY(-205.71deg); }
+  71.4%, 79.3% { transform: rotateY(-257.14deg); }
+  85.7%, 93.6% { transform: rotateY(-308.57deg); }
   100% { transform: rotateY(-360deg); }
 }
 .carrusel3d-item {
   position: absolute; inset: 0; margin: 0;
   border-radius: 16px; overflow: hidden;
   border: 1px solid var(--color-borde-dorado); background: rgba(18,35,61,.95);
-  transform: rotateY(calc(var(--i) * 120deg)) translateZ(var(--radio));
+  transform: rotateY(calc(var(--i) * 51.43deg)) translateZ(var(--radio));
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
   filter: brightness(.92);
-  animation: frente3d 36s ease-in-out infinite;
-  animation-delay: calc((3 - var(--i)) * -12s);
+  animation: frente3d 24.5s ease-in-out infinite;
+  animation-delay: calc((7 - var(--i)) * -3.5s);
 }
-.carrusel3d-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Varias fotos nuevas son verticales: el encuadre favorece el tercio
+   superior para no cortar los rostros al recortar en panorámico. */
+.carrusel3d-item img { width: 100%; height: 100%; object-fit: cover; object-position: center 32%; display: block; }
 .carrusel3d-caption {
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 28px 16px 12px; text-align: center;
@@ -415,12 +424,12 @@ body.loaded .hero [data-enter] {
   pointer-events: none;
 }
 /* La foto que pasa al frente brilla y crece levemente; las laterales se atenúan.
-   Sincronizado con el giro escalonado: frente durante el primer tercio del ciclo. */
+   Sincronizado con el giro escalonado: frente durante el primer séptimo del ciclo. */
 @keyframes frente3d {
-  0%, 23%, 100% { filter: brightness(1.18); scale: 1.06; }
-  36% { filter: brightness(.8); scale: 1; }
+  0%, 8%, 100% { filter: brightness(1.18); scale: 1.06; }
+  22% { filter: brightness(.8); scale: 1; }
   50% { filter: brightness(.55); scale: .98; }
-  64% { filter: brightness(.8); scale: 1; }
+  78% { filter: brightness(.8); scale: 1; }
 }
 /* La pausa por toque aplica en pantallas táctiles (móvil): tocar pausa/reanuda */
 @media (pointer: coarse) {
@@ -441,6 +450,13 @@ body.loaded .hero [data-enter] {
 }
 .btn-whatsapp svg { width: 24px; height: 24px; fill: #fff; flex: none; }
 .btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,211,102,.35); }
+.btn-facebook {
+  background: #1877F2; color: #fff;
+  display: inline-flex; align-items: center; gap: 12px;
+  font-size: 1.02rem; padding: 18px 36px; margin-top: 14px;
+}
+.btn-facebook svg { width: 24px; height: 24px; fill: #fff; flex: none; }
+.btn-facebook:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(24,119,242,.35); }
 .link-mapa {
   display: inline-block; margin-top: 18px; color: var(--color-dorado);
   font-weight: 600; font-size: .95rem; text-decoration: none;
@@ -473,7 +489,17 @@ body.loaded .hero [data-enter] {
 footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40,.92) 64px); border-top: 1px solid var(--color-borde-dorado); padding: 44px 0 34px; text-align: center; }
 .footer-logo { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(242,193,78,.45)); margin-bottom: 14px; }
 .footer-nombre { font-family: var(--font-display); font-weight: 600; letter-spacing: .06em; margin: 0 0 10px; }
-.footer-verso { font-family: var(--font-serifa); font-style: italic; color: var(--color-tenue); margin: 0 0 14px; }
+.footer-verso { font-family: var(--font-serifa); font-style: italic; color: var(--color-tenue); margin: 0 0 18px; }
+.footer-sociales { display: flex; justify-content: center; gap: 14px; margin: 0 0 18px; }
+.footer-social {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid var(--color-borde-dorado);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--color-dorado); text-decoration: none;
+  transition: background-color 220ms var(--ease), color 220ms var(--ease), transform 220ms var(--ease);
+}
+.footer-social svg { width: 22px; height: 22px; fill: currentColor; }
+.footer-social:hover { background: rgba(242,193,78,.12); color: var(--color-dorado-suave); transform: translateY(-2px); }
 .footer-creditos { color: var(--color-tenue); font-size: .8rem; margin: 0; opacity: .75; }
 
 /* ============ WHATSAPP FLOTANTE ============ */
@@ -509,7 +535,7 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
   .bg-media video { display: none; }
   .bg-media img.kenburns { animation: none; }
   .carrusel3d { cursor: default; }
-  .carrusel3d-anillo { animation: none; transform: rotateY(-24deg); }
+  .carrusel3d-anillo { animation: none; transform: rotateY(-25.7deg); }
   .carrusel3d-item { animation: none; filter: none; scale: none; backface-visibility: visible; -webkit-backface-visibility: visible; }
   .btn, .btn-primario, .btn-whatsapp, .drawer, .scrim, .nav { transition: none; }
   .drawer.open, .scrim.open { animation: none; }
@@ -651,9 +677,13 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
       <h2 class="sec-title reveal" id="galeria-titulo">Nuestra familia</h2>
       <div class="carrusel3d reveal" id="galeria-carrusel" role="group" aria-label="Galería Nuestra familia en 3D — toca para pausar o reanudar el giro">
         <div class="carrusel3d-anillo" id="galeria-anillo">
-          <figure class="carrusel3d-item" style="--i:0"><img src="assets/fotos-reales/foto-familia-1.jpg" alt="Jóvenes de la congregación adorando con las manos levantadas"><figcaption class="carrusel3d-caption">Adorando juntos</figcaption></figure>
-          <figure class="carrusel3d-item" style="--i:1"><img src="assets/fotos-reales/foto-familia-2.jpg" alt="Jóvenes adorando con los ojos cerrados y las manos en alto"><figcaption class="carrusel3d-caption">Una familia en adoración</figcaption></figure>
-          <figure class="carrusel3d-item" style="--i:2"><img src="assets/fotos-reales/foto-familia-3.jpg" alt="Toda la congregación adorando con las manos levantadas"><figcaption class="carrusel3d-caption">Juntos en su presencia</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:0"><img src="assets/fotos-nuevas/foto-1.jpg" alt="La pastora predicando en el púlpito bajo luz azul, frente al pendón de Monte de Sion"><figcaption class="carrusel3d-caption">La Palabra en el púlpito</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:1"><img src="assets/fotos-nuevas/foto-2.jpg" alt="La pastora predicando con el micrófono durante el culto"><figcaption class="carrusel3d-caption">Ministrando con poder</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:2"><img src="assets/fotos-nuevas/foto-3.jpg" alt="Dos mujeres de la congregación adorando con las manos levantadas bajo luz azul"><figcaption class="carrusel3d-caption">Adoración en su presencia</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:3"><img src="assets/fotos-nuevas/foto-4.jpg" alt="Una mujer de la congregación sentada en oración durante el culto"><figcaption class="carrusel3d-caption">En oración</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:4"><img src="assets/fotos-nuevas/foto-5.jpg" alt="Grupo de la congregación de espaldas a la orilla del río con camisetas que dicen Santificados"><figcaption class="carrusel3d-caption">Santificados para permanecer</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:5"><img src="assets/fotos-nuevas/foto-6.jpg" alt="Bautismo en el río: la congregación celebrando dentro del agua"><figcaption class="carrusel3d-caption">Bautismos: un tiempo de gozo</figcaption></figure>
+          <figure class="carrusel3d-item" style="--i:6"><img src="assets/fotos-nuevas/foto-7.jpg" alt="Cinco personas de la congregación de espaldas contemplando el río"><figcaption class="carrusel3d-caption">Una familia en el río</figcaption></figure>
         </div>
       </div>
     </div>
@@ -677,6 +707,10 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 1.9 6.5L4 29l7.7-1.8c1.8 1 3.9 1.6 6.1 1.6h.1c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.1 1.2-4.5-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.8C6.9 9.9 11 5.8 16 5.8S25.1 9.9 25.1 15 21 24.8 16 24.8zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>
           <span id="contacto-wa-numero">+57 310 652 6950</span>
         </a>
+        <a class="btn btn-facebook" id="contacto-fb" href="https://www.facebook.com/people/Ministerio-apostólico-y-profético-Monte-de-Sión/61580078036491/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Síguenos en Facebook
+        </a>
         <br>
         <a class="link-mapa" id="contacto-mapa" href="https://www.google.com/maps/dir/?api=1&destination=11.236798205873933,-74.17728723809981" target="_blank" rel="noopener">Ubícate en Google Maps</a>
       </div>
@@ -690,6 +724,14 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
     <img class="footer-logo" src="assets/logo-monte-de-sion.png" alt="Logo Iglesia Monte de Sion" width="48" height="48">
     <p class="footer-nombre" id="footer-nombre">MONTE DE SION</p>
     <p class="footer-verso" id="footer-verso">Los que confían en Jehová son como el monte de Sion, que no se mueve, sino que permanece para siempre. — Salmo 125:1</p>
+    <div class="footer-sociales">
+      <a class="footer-social" id="footer-fb" href="https://www.facebook.com/people/Ministerio-apostólico-y-profético-Monte-de-Sión/61580078036491/" target="_blank" rel="noopener" aria-label="Facebook oficial de la Iglesia Monte de Sion">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+      <a class="footer-social" id="footer-wa" href="https://wa.me/573106526950?text=Hola%2C%20vengo%20de%20la%20web%20de%20Monte%20de%20Sion" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 1.9 6.5L4 29l7.7-1.8c1.8 1 3.9 1.6 6.1 1.6h.1c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.1 1.2-4.5-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.8C6.9 9.9 11 5.8 16 5.8S25.1 9.9 25.1 15 21 24.8 16 24.8zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>
+      </a>
+    </div>
     <p class="footer-creditos" id="footer-creditos">© 2026 Iglesia Monte de Sion</p>
   </div>
 </footer>
@@ -699,7 +741,7 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
   <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 1.9 6.5L4 29l7.7-1.8c1.8 1 3.9 1.6 6.1 1.6h.1c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-4.6 1.1 1.2-4.5-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.8C6.9 9.9 11 5.8 16 5.8S25.1 9.9 25.1 15 21 24.8 16 24.8zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>
 </a>
 
-<script src="data:application/javascript;base64,LyogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAqIGRhdGEvY29udGVuaWRvLmpzIOKAlCBGVUVOVEUgw5pOSUNBIERFIFZFUkRBRAogKiBQcm95ZWN0bzogd2ViLWlnbGVzaWEtbW9udGUtc2lvbiDCtyBSb2w6IEJhY2tlbmQvRGF0b3MKICogRmVjaGE6IDIwMjYtMTAtMDIKICoKICogQ09OVFJBVE8gMSBkZSBDT05UUkFUT1MubWQuIE9iamV0byBnbG9iYWwgYENPTlRFTklET2AsCiAqIGF1dG9jb250ZW5pZG8sIHNpbiBkZXBlbmRlbmNpYXMsIHNpbiBmZXRjaC4KICogRWwgRnJvbnRlbmQgbG8gY29uc3VtZSBlbiBtb2RvIFNPTE8gTEVDVFVSQS4KICogQ2FtcG9zIG1hcmNhZG9zIFRPRE8oZXF1aXBvKSBzb24gcGxhY2Vob2xkZXJzIHJlYWxpc3RhcwogKiBwZW5kaWVudGVzIGRlIGRhdG8gcmVhbCAoZWwgQ29tYW5kYW50ZSBsb3MgYWp1c3RhIGRlc3B1w6lzKS4KICogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ICovCgp3aW5kb3cuQ09OVEVOSURPID0gewogIHNpdGlvOiB7CiAgICBub21icmU6ICJNb250ZSBkZSBTaW9uIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchQogICAgbm9tYnJlQ29tcGxldG86ICJNaW5pc3RlcmlvIEFwb3N0w7NsaWNvIHkgUHJvZsOpdGljbyBNb250ZSBkZSBTaW9uIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchSAoZGVsIGxvZ28gb2ZpY2lhbCkKICAgIHRhZ2xpbmU6ICJVbmEgaWdsZXNpYSwgdW5hIGZhbWlsaWEiLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFIChkZWNpc2nDs24gR2F0ZSAxLCBhanVzdGFibGUgZGVzcHXDqXMpCiAgICBsb2dvOiAiYXNzZXRzL2xvZ28tbW9udGUtZGUtc2lvbi5wbmciLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFIChsb2dvIG9maWNpYWwgZXh0cmHDrWRvIGRlbCBmbHllcikKICAgIHdoYXRzYXBwOiAiKzU3IDMxMCA2NTIgNjk1MCIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUgKFBhc3RvcmEgWXVyeSBNb250ZXJvOyBpZMOpbnRpY28gYSBjb250YWN0by53aGF0c2FwcCkKICAgIHdoYXRzYXBwTWVuc2FqZTogIkhvbGEsIHZlbmdvIGRlIGxhIHdlYiBkZSBNb250ZSBkZSBTaW9uIiAvLyBzdHJpbmcg4oCUIG1lbnNhamUgcHJlbGxlbmFkbyBkZWwgYm90w7NuIGZsb3RhbnRlCiAgfSwKCiAgaGVybzogewogICAgdGl0dWxvOiAiTW9udGUgZGUgU2lvbiIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUKICAgIHZlcnNpY3VsbzogIkxvcyBxdWUgY29uZsOtYW4gZW4gSmVob3bDoSBzb24gY29tbyBlbCBtb250ZSBkZSBTaW9uLCBxdWUgbm8gc2UgbXVldmUsIHNpbm8gcXVlIHBlcm1hbmVjZSBwYXJhIHNpZW1wcmUuIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchSAoU2FsbW8gMTI1OjEsIFJWUjE5NjAg4oCUIGRlY2lzacOzbiBHYXRlIDEpCiAgICBjaXRhOiAiU2FsbW8gMTI1OjEiLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFCiAgICBjdGFQcmltYXJpbzogeyB0ZXh0bzogIlZpc8OtdGFub3MiLCBkZXN0aW5vOiAiI3NlcnZpY2lvcyIgfSwgLy8ge3RleHRvLCBkZXN0aW5vKGFuY2xhIGRlbCBDT05UUkFUTyAzKX0KICAgIGN0YVNlY3VuZGFyaW86IHsgdGV4dG86ICJFc2Nyw61iZW5vcyIsIGRlc3Rpbm86ICIjY29udGFjdG8iIH0gLy8ge3RleHRvLCBkZXN0aW5vKGFuY2xhIGRlbCBDT05UUkFUTyAzKX0KICB9LAoKICBub3NvdHJvczogewogICAgdGl0dWxvOiAiUXVpw6luZXMgc29tb3MiLCAvLyBzdHJpbmcKICAgIHBhcnJhZm9zOiBbIC8vIHN0cmluZ1tdIOKAlCBQTEFDRUhPTERFUiByZWFsaXN0YQogICAgICAiU29tb3MgdW5hIGZhbWlsaWEgZGUgZmUgZW4gU2FudGEgTWFydGEgcXVlIHNlIHJlw7puZSBwYXJhIGFkb3JhciBhIERpb3MgY29uIHRvZG8gZWwgY29yYXrDs24uIEJham8gZWwgbGlkZXJhemdvIGRlIGxhIHBhc3RvcmEgWXVyeSBNb250ZXJvLCBjcmVlbW9zIHF1ZSBsYSBpZ2xlc2lhIG5vIGVzIHVuIGVkaWZpY2lvOiBzb21vcyBwZXJzb25hcyDigJRuacOxb3MsIGrDs3ZlbmVzIHkgYWR1bHRvc+KAlCBjYW1pbmFuZG8ganVudGFzLiIsIC8vIFRPRE8oZXF1aXBvKTogcmVlbXBsYXphciBjb24gbGEgaGlzdG9yaWEgcmVhbCBkZSBsYSBpZ2xlc2lhCiAgICAgICJOdWVzdHJhIG1pc2nDs24gZXMgYW51bmNpYXIgZWwgZXZhbmdlbGlvLCBmb3JtYXIgZGlzY8OtcHVsb3MgeSBzZXJ2aXIgYSBudWVzdHJhIGNvbXVuaWRhZCBjb24gYW1vci4gQXF1w60gbmFkaWUgZXMgdmlzaXRhbnRlIHBvciBtdWNobyB0aWVtcG86IHRvZG9zIHNvbiBmYW1pbGlhLiIgLy8gVE9ETyhlcXVpcG8pOiByZWVtcGxhemFyIGNvbiBsYSBtaXNpw7NuIG9maWNpYWwKICAgIF0sCiAgICBwdW50b3M6IFsgLy8ge3RpdHVsbywgdGV4dG99W10g4oCUIFBMQUNFSE9MREVSIHJlYWxpc3RhCiAgICAgIHsgdGl0dWxvOiAiRmUiLCB0ZXh0bzogIkNyZWVtb3MgZW4gZWwgcG9kZXIgZGUgbGEgUGFsYWJyYSB5IGVuIHVuIERpb3MgcXVlIHRyYW5zZm9ybWEgdmlkYXMuIiB9LCAvLyBUT0RPKGVxdWlwbykKICAgICAgeyB0aXR1bG86ICJGYW1pbGlhIiwgdGV4dG86ICJOacOxb3MsIGrDs3ZlbmVzIHkgYWR1bHRvcyBhZG9yYW1vcyBqdW50b3MsIHNpbiBkaXN0aW5jaW9uZXM6IHVuYSBzb2xhIGZhbWlsaWEuIiB9LCAvLyBUT0RPKGVxdWlwbykKICAgICAgeyB0aXR1bG86ICJTZXJ2aWNpbyIsIHRleHRvOiAiU2Vydmltb3MgYSBEaW9zIHkgYSBudWVzdHJhIGNvbXVuaWRhZCBjb24gYW1vciB5IGVudHJlZ2EuIiB9IC8vIFRPRE8oZXF1aXBvKQogICAgXQogIH0sCgogIHNlcnZpY2lvczogewogICAgdGl0dWxvOiAiTnVlc3Ryb3Mgc2VydmljaW9zIiwgLy8gc3RyaW5nCiAgICBsaXN0YTogWyAvLyB7ZGlhLCBob3JhLCBub21icmV9W10g4oCUIG9yZGVuIGNyb25vbMOzZ2ljbyDigJQgUkVBTCDinIUKICAgICAgeyBkaWE6ICJKdWV2ZXMiLCBob3JhOiAiNzowMCBwLiBtLiIsIG5vbWJyZTogIkN1bHRvIGRlIGFkb3JhY2nDs24iIH0sCiAgICAgIHsgZGlhOiAiRG9taW5nbyIsIGhvcmE6ICI3OjAwIHAuIG0uIiwgbm9tYnJlOiAiU2VydmljaW8gZG9taW5pY2FsIiB9CiAgICBdLAogICAgbm90YTogIlRlIGVzcGVyYW1vcyBjb24gbG9zIGJyYXpvcyBhYmllcnRvcyIgLy8gc3RyaW5nCiAgfSwKCiAgY29tdW5pZGFkOiB7IC8vIFJFQUwg4pyFIChkZWNpc2nDs24gR2F0ZSAxOiBsYSBpZ2xlc2lhIG5vIHNlIGRpdmlkZSBwb3IgZ3J1cG9zKQogICAgdGl0dWxvOiAiVW5hIGZhbWlsaWEiLCAvLyBzdHJpbmcKICAgIHRleHRvOiAiRW4gTW9udGUgZGUgU2lvbiB0b2RvcyBzb21vcyB1bmEgc29sYSBmYW1pbGlhOiBuacOxb3MsIGrDs3ZlbmVzIHkgYWR1bHRvcyBhZG9yYW1vcyBqdW50b3MsIHNpbiBkaXN0aW5jaW9uZXMuIiwgLy8gc3RyaW5nIOKAlCBQTEFDRUhPTERFUiByZWFsaXN0YSwgZWwgQ29tYW5kYW50ZSBwdWVkZSBhanVzdGFyIOKAlCBUT0RPKGVxdWlwbykKICAgIHB1bnRvczogWyAvLyBzdHJpbmdbXSDigJQgMyBwaWxhcmVzIGRlIGxhIGNvbXVuaWRhZAogICAgICAiQWRvcmFjacOzbiBwYXJhIHRvZG9zIiwKICAgICAgIlBhbGFicmEgcXVlIHRyYW5zZm9ybWEiLAogICAgICAiQ29tdW5pZGFkIHF1ZSBhYnJhemEiCiAgICBdCiAgfSwKCiAgcGFsYWJyYTogewogICAgdmVyc2ljdWxvOiAiTG9zIHF1ZSBjb25mw61hbiBlbiBKZWhvdsOhIHNvbiBjb21vIGVsIG1vbnRlIGRlIFNpb24sIHF1ZSBubyBzZSBtdWV2ZSwgc2lubyBxdWUgcGVybWFuZWNlIHBhcmEgc2llbXByZS4gQ29tbyBKZXJ1c2Fsw6luIHRpZW5lIG1vbnRlcyBhbHJlZGVkb3IgZGUgZWxsYSwgYXPDrSBKZWhvdsOhIGVzdMOhIGFscmVkZWRvciBkZSBzdSBwdWVibG8gZGVzZGUgYWhvcmEgeSBwYXJhIHNpZW1wcmUuIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchSAoU2FsbW8gMTI1OjEtMiwgUlZSMTk2MCkKICAgIGNpdGE6ICJTYWxtbyAxMjU6MS0yIChSVlIxOTYwKSIgLy8gc3RyaW5nIOKAlCBSRUFMIOKchQogIH0sCgogIGdhbGVyaWE6IHsKICAgIHRpdHVsbzogIk51ZXN0cmEgZmFtaWxpYSIsIC8vIHN0cmluZwogICAgaW1hZ2VuZXM6IFsgLy8ge3NyYywgYWx0LCBjYXB0aW9ufVtdIOKAlCBGT1RPUyBSRUFMRVMgZGUgbGEgY29uZ3JlZ2FjacOzbiAoMjAyNi0xMC0wMikKICAgICAgeyBzcmM6ICJhc3NldHMvZm90b3MtcmVhbGVzL2ZvdG8tZmFtaWxpYS0xLmpwZyIsIGFsdDogIkrDs3ZlbmVzIGRlIGxhIGNvbmdyZWdhY2nDs24gYWRvcmFuZG8gY29uIGxhcyBtYW5vcyBsZXZhbnRhZGFzIiwgY2FwdGlvbjogIkFkb3JhbmRvIGp1bnRvcyIgfSwKICAgICAgeyBzcmM6ICJhc3NldHMvZm90b3MtcmVhbGVzL2ZvdG8tZmFtaWxpYS0yLmpwZyIsIGFsdDogIkrDs3ZlbmVzIGFkb3JhbmRvIGNvbiBsb3Mgb2pvcyBjZXJyYWRvcyB5IGxhcyBtYW5vcyBlbiBhbHRvIiwgY2FwdGlvbjogIlVuYSBmYW1pbGlhIGVuIGFkb3JhY2nDs24iIH0sCiAgICAgIHsgc3JjOiAiYXNzZXRzL2ZvdG9zLXJlYWxlcy9mb3RvLWZhbWlsaWEtMy5qcGciLCBhbHQ6ICJUb2RhIGxhIGNvbmdyZWdhY2nDs24gYWRvcmFuZG8gY29uIGxhcyBtYW5vcyBsZXZhbnRhZGFzIiwgY2FwdGlvbjogIkp1bnRvcyBlbiBzdSBwcmVzZW5jaWEiIH0KICAgIF0KICB9LAoKICBjb250YWN0bzogewogICAgdGl0dWxvOiAiVmlzw610YW5vcyIsIC8vIHN0cmluZwogICAgZGlyZWNjaW9uOiAiRGlhZ29uYWwgMjkgIzMyLTY1LCBTYW50YSBMdWPDrWEiLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFCiAgICBtYXBhVXJsOiAiIiwgLy8gc3RyaW5nIOKAlCBQTEFDRUhPTERFUiAoZW1iZWQgbyBlbmxhY2UgZGVsIG1hcGE7IGVsIEZyb250ZW5kIG9jdWx0YSBlbCBtYXBhIHNpIGVzdMOhIHZhY8Otbykg4oCUIFRPRE8oZXF1aXBvKQogICAgd2hhdHNhcHA6ICIrNTcgMzEwIDY1MiA2OTUwIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchSAoaWTDqW50aWNvIGEgc2l0aW8ud2hhdHNhcHApCiAgICBmb3JtdWxhcmlvOiBmYWxzZSAvLyBib29sZWFuIOKAlCBkZWNpc2nDs24gR2F0ZSAxOiBzb2xvIFdoYXRzQXBwLCBzaW4gZm9ybXVsYXJpbwogIH0sCgogIGZvb3RlcjogewogICAgdmVyc2ljdWxvQ29ydG86ICJMb3MgcXVlIGNvbmbDrWFuIGVuIEplaG92w6Egc29uIGNvbW8gZWwgbW9udGUgZGUgU2lvbiwgcXVlIG5vIHNlIG11ZXZlLCBzaW5vIHF1ZSBwZXJtYW5lY2UgcGFyYSBzaWVtcHJlLiDigJQgU2FsbW8gMTI1OjEiLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFIChTYWxtbyAxMjU6MSBjb21wbGV0bywgUlZSMTk2MCkKICAgIGNyZWRpdG9zOiAiwqkgMjAyNiBJZ2xlc2lhIE1vbnRlIGRlIFNpb24iIC8vIHN0cmluZwogIH0KfTsK"></script>
+<script src="data:application/javascript;base64,LyogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAqIGRhdGEvY29udGVuaWRvLmpzIOKAlCBGVUVOVEUgw5pOSUNBIERFIFZFUkRBRAogKiBQcm95ZWN0bzogd2ViLWlnbGVzaWEtbW9udGUtc2lvbiDCtyBSb2w6IEJhY2tlbmQvRGF0b3MKICogRmVjaGE6IDIwMjYtMTAtMDIKICoKICogQ09OVFJBVE8gMSBkZSBDT05UUkFUT1MubWQuIE9iamV0byBnbG9iYWwgYENPTlRFTklET2AsCiAqIGF1dG9jb250ZW5pZG8sIHNpbiBkZXBlbmRlbmNpYXMsIHNpbiBmZXRjaC4KICogRWwgRnJvbnRlbmQgbG8gY29uc3VtZSBlbiBtb2RvIFNPTE8gTEVDVFVSQS4KICogQ2FtcG9zIG1hcmNhZG9zIFRPRE8oZXF1aXBvKSBzb24gcGxhY2Vob2xkZXJzIHJlYWxpc3RhcwogKiBwZW5kaWVudGVzIGRlIGRhdG8gcmVhbCAoZWwgQ29tYW5kYW50ZSBsb3MgYWp1c3RhIGRlc3B1w6lzKS4KICogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ICovCgp3aW5kb3cuQ09OVEVOSURPID0gewogIHNpdGlvOiB7CiAgICBub21icmU6ICJNb250ZSBkZSBTaW9uIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchQogICAgbm9tYnJlQ29tcGxldG86ICJNaW5pc3RlcmlvIEFwb3N0w7NsaWNvIHkgUHJvZsOpdGljbyBNb250ZSBkZSBTaW9uIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchSAoZGVsIGxvZ28gb2ZpY2lhbCkKICAgIHRhZ2xpbmU6ICJVbmEgaWdsZXNpYSwgdW5hIGZhbWlsaWEiLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFIChkZWNpc2nDs24gR2F0ZSAxLCBhanVzdGFibGUgZGVzcHXDqXMpCiAgICBsb2dvOiAiYXNzZXRzL2xvZ28tbW9udGUtZGUtc2lvbi5wbmciLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFIChsb2dvIG9maWNpYWwgZXh0cmHDrWRvIGRlbCBmbHllcikKICAgIHdoYXRzYXBwOiAiKzU3IDMxMCA2NTIgNjk1MCIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUgKFBhc3RvcmEgWXVyeSBNb250ZXJvOyBpZMOpbnRpY28gYSBjb250YWN0by53aGF0c2FwcCkKICAgIHdoYXRzYXBwTWVuc2FqZTogIkhvbGEsIHZlbmdvIGRlIGxhIHdlYiBkZSBNb250ZSBkZSBTaW9uIiwgLy8gc3RyaW5nIOKAlCBtZW5zYWplIHByZWxsZW5hZG8gZGVsIGJvdMOzbiBmbG90YW50ZQogICAgZmFjZWJvb2s6ICJodHRwczovL3d3dy5mYWNlYm9vay5jb20vcGVvcGxlL01pbmlzdGVyaW8tYXBvc3TDs2xpY28teS1wcm9mw6l0aWNvLU1vbnRlLWRlLVNpw7NuLzYxNTgwMDc4MDM2NDkxLyIgLy8gc3RyaW5nIOKAlCBSRUFMIOKchSAocMOhZ2luYSBvZmljaWFsIGRlIEZhY2Vib29rKQogIH0sCgogIGhlcm86IHsKICAgIHRpdHVsbzogIk1vbnRlIGRlIFNpb24iLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFCiAgICB2ZXJzaWN1bG86ICJMb3MgcXVlIGNvbmbDrWFuIGVuIEplaG92w6Egc29uIGNvbW8gZWwgbW9udGUgZGUgU2lvbiwgcXVlIG5vIHNlIG11ZXZlLCBzaW5vIHF1ZSBwZXJtYW5lY2UgcGFyYSBzaWVtcHJlLiIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUgKFNhbG1vIDEyNToxLCBSVlIxOTYwIOKAlCBkZWNpc2nDs24gR2F0ZSAxKQogICAgY2l0YTogIlNhbG1vIDEyNToxIiwgLy8gc3RyaW5nIOKAlCBSRUFMIOKchQogICAgY3RhUHJpbWFyaW86IHsgdGV4dG86ICJWaXPDrXRhbm9zIiwgZGVzdGlubzogIiNzZXJ2aWNpb3MiIH0sIC8vIHt0ZXh0bywgZGVzdGlubyhhbmNsYSBkZWwgQ09OVFJBVE8gMyl9CiAgICBjdGFTZWN1bmRhcmlvOiB7IHRleHRvOiAiRXNjcsOtYmVub3MiLCBkZXN0aW5vOiAiI2NvbnRhY3RvIiB9IC8vIHt0ZXh0bywgZGVzdGlubyhhbmNsYSBkZWwgQ09OVFJBVE8gMyl9CiAgfSwKCiAgbm9zb3Ryb3M6IHsKICAgIHRpdHVsbzogIlF1acOpbmVzIHNvbW9zIiwgLy8gc3RyaW5nCiAgICBwYXJyYWZvczogWyAvLyBzdHJpbmdbXSDigJQgUExBQ0VIT0xERVIgcmVhbGlzdGEKICAgICAgIlNvbW9zIHVuYSBmYW1pbGlhIGRlIGZlIGVuIFNhbnRhIE1hcnRhIHF1ZSBzZSByZcO6bmUgcGFyYSBhZG9yYXIgYSBEaW9zIGNvbiB0b2RvIGVsIGNvcmF6w7NuLiBCYWpvIGVsIGxpZGVyYXpnbyBkZSBsYSBwYXN0b3JhIFl1cnkgTW9udGVybywgY3JlZW1vcyBxdWUgbGEgaWdsZXNpYSBubyBlcyB1biBlZGlmaWNpbzogc29tb3MgcGVyc29uYXMg4oCUbmnDsW9zLCBqw7N2ZW5lcyB5IGFkdWx0b3PigJQgY2FtaW5hbmRvIGp1bnRhcy4iLCAvLyBUT0RPKGVxdWlwbyk6IHJlZW1wbGF6YXIgY29uIGxhIGhpc3RvcmlhIHJlYWwgZGUgbGEgaWdsZXNpYQogICAgICAiTnVlc3RyYSBtaXNpw7NuIGVzIGFudW5jaWFyIGVsIGV2YW5nZWxpbywgZm9ybWFyIGRpc2PDrXB1bG9zIHkgc2VydmlyIGEgbnVlc3RyYSBjb211bmlkYWQgY29uIGFtb3IuIEFxdcOtIG5hZGllIGVzIHZpc2l0YW50ZSBwb3IgbXVjaG8gdGllbXBvOiB0b2RvcyBzb24gZmFtaWxpYS4iIC8vIFRPRE8oZXF1aXBvKTogcmVlbXBsYXphciBjb24gbGEgbWlzacOzbiBvZmljaWFsCiAgICBdLAogICAgcHVudG9zOiBbIC8vIHt0aXR1bG8sIHRleHRvfVtdIOKAlCBQTEFDRUhPTERFUiByZWFsaXN0YQogICAgICB7IHRpdHVsbzogIkZlIiwgdGV4dG86ICJDcmVlbW9zIGVuIGVsIHBvZGVyIGRlIGxhIFBhbGFicmEgeSBlbiB1biBEaW9zIHF1ZSB0cmFuc2Zvcm1hIHZpZGFzLiIgfSwgLy8gVE9ETyhlcXVpcG8pCiAgICAgIHsgdGl0dWxvOiAiRmFtaWxpYSIsIHRleHRvOiAiTmnDsW9zLCBqw7N2ZW5lcyB5IGFkdWx0b3MgYWRvcmFtb3MganVudG9zLCBzaW4gZGlzdGluY2lvbmVzOiB1bmEgc29sYSBmYW1pbGlhLiIgfSwgLy8gVE9ETyhlcXVpcG8pCiAgICAgIHsgdGl0dWxvOiAiU2VydmljaW8iLCB0ZXh0bzogIlNlcnZpbW9zIGEgRGlvcyB5IGEgbnVlc3RyYSBjb211bmlkYWQgY29uIGFtb3IgeSBlbnRyZWdhLiIgfSAvLyBUT0RPKGVxdWlwbykKICAgIF0KICB9LAoKICBzZXJ2aWNpb3M6IHsKICAgIHRpdHVsbzogIk51ZXN0cm9zIHNlcnZpY2lvcyIsIC8vIHN0cmluZwogICAgbGlzdGE6IFsgLy8ge2RpYSwgaG9yYSwgbm9tYnJlfVtdIOKAlCBvcmRlbiBjcm9ub2zDs2dpY28g4oCUIFJFQUwg4pyFCiAgICAgIHsgZGlhOiAiSnVldmVzIiwgaG9yYTogIjc6MDAgcC4gbS4iLCBub21icmU6ICJDdWx0byBkZSBhZG9yYWNpw7NuIiB9LAogICAgICB7IGRpYTogIkRvbWluZ28iLCBob3JhOiAiNzowMCBwLiBtLiIsIG5vbWJyZTogIlNlcnZpY2lvIGRvbWluaWNhbCIgfQogICAgXSwKICAgIG5vdGE6ICJUZSBlc3BlcmFtb3MgY29uIGxvcyBicmF6b3MgYWJpZXJ0b3MiIC8vIHN0cmluZwogIH0sCgogIGNvbXVuaWRhZDogeyAvLyBSRUFMIOKchSAoZGVjaXNpw7NuIEdhdGUgMTogbGEgaWdsZXNpYSBubyBzZSBkaXZpZGUgcG9yIGdydXBvcykKICAgIHRpdHVsbzogIlVuYSBmYW1pbGlhIiwgLy8gc3RyaW5nCiAgICB0ZXh0bzogIkVuIE1vbnRlIGRlIFNpb24gdG9kb3Mgc29tb3MgdW5hIHNvbGEgZmFtaWxpYTogbmnDsW9zLCBqw7N2ZW5lcyB5IGFkdWx0b3MgYWRvcmFtb3MganVudG9zLCBzaW4gZGlzdGluY2lvbmVzLiIsIC8vIHN0cmluZyDigJQgUExBQ0VIT0xERVIgcmVhbGlzdGEsIGVsIENvbWFuZGFudGUgcHVlZGUgYWp1c3RhciDigJQgVE9ETyhlcXVpcG8pCiAgICBwdW50b3M6IFsgLy8gc3RyaW5nW10g4oCUIDMgcGlsYXJlcyBkZSBsYSBjb211bmlkYWQKICAgICAgIkFkb3JhY2nDs24gcGFyYSB0b2RvcyIsCiAgICAgICJQYWxhYnJhIHF1ZSB0cmFuc2Zvcm1hIiwKICAgICAgIkNvbXVuaWRhZCBxdWUgYWJyYXphIgogICAgXQogIH0sCgogIHBhbGFicmE6IHsKICAgIHZlcnNpY3VsbzogIkxvcyBxdWUgY29uZsOtYW4gZW4gSmVob3bDoSBzb24gY29tbyBlbCBtb250ZSBkZSBTaW9uLCBxdWUgbm8gc2UgbXVldmUsIHNpbm8gcXVlIHBlcm1hbmVjZSBwYXJhIHNpZW1wcmUuIENvbW8gSmVydXNhbMOpbiB0aWVuZSBtb250ZXMgYWxyZWRlZG9yIGRlIGVsbGEsIGFzw60gSmVob3bDoSBlc3TDoSBhbHJlZGVkb3IgZGUgc3UgcHVlYmxvIGRlc2RlIGFob3JhIHkgcGFyYSBzaWVtcHJlLiIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUgKFNhbG1vIDEyNToxLTIsIFJWUjE5NjApCiAgICBjaXRhOiAiU2FsbW8gMTI1OjEtMiAoUlZSMTk2MCkiIC8vIHN0cmluZyDigJQgUkVBTCDinIUKICB9LAoKICBnYWxlcmlhOiB7CiAgICB0aXR1bG86ICJOdWVzdHJhIGZhbWlsaWEiLCAvLyBzdHJpbmcKICAgIGltYWdlbmVzOiBbIC8vIHtzcmMsIGFsdCwgY2FwdGlvbn1bXSDigJQgNyBGT1RPUyBOVUVWQVMgZW52aWFkYXMgcG9yIGVsIGR1ZcOxbyAoMjAyNi0xMC0wMiksIHJlZW1wbGF6YW4gYSB0b2RhcyBsYXMgYW50ZXJpb3JlcwogICAgICB7IHNyYzogImFzc2V0cy9mb3Rvcy1yZWFsZXMvZm90by0xLmpwZyIsIGFsdDogIkxhIHBhc3RvcmEgcHJlZGljYW5kbyBlbiBlbCBww7pscGl0byBiYWpvIGx1eiBhenVsLCBmcmVudGUgYWwgcGVuZMOzbiBkZSBNb250ZSBkZSBTaW9uIiwgY2FwdGlvbjogIkxhIFBhbGFicmEgZW4gZWwgcMO6bHBpdG8iIH0sCiAgICAgIHsgc3JjOiAiYXNzZXRzL2ZvdG9zLXJlYWxlcy9mb3RvLTIuanBnIiwgYWx0OiAiTGEgcGFzdG9yYSBwcmVkaWNhbmRvIGNvbiBlbCBtaWNyw7Nmb25vIGR1cmFudGUgZWwgY3VsdG8iLCBjYXB0aW9uOiAiTWluaXN0cmFuZG8gY29uIHBvZGVyIiB9LAogICAgICB7IHNyYzogImFzc2V0cy9mb3Rvcy1yZWFsZXMvZm90by0zLmpwZyIsIGFsdDogIkRvcyBtdWplcmVzIGRlIGxhIGNvbmdyZWdhY2nDs24gYWRvcmFuZG8gY29uIGxhcyBtYW5vcyBsZXZhbnRhZGFzIGJham8gbHV6IGF6dWwiLCBjYXB0aW9uOiAiQWRvcmFjacOzbiBlbiBzdSBwcmVzZW5jaWEiIH0sCiAgICAgIHsgc3JjOiAiYXNzZXRzL2ZvdG9zLXJlYWxlcy9mb3RvLTQuanBnIiwgYWx0OiAiVW5hIG11amVyIGRlIGxhIGNvbmdyZWdhY2nDs24gc2VudGFkYSBlbiBvcmFjacOzbiBkdXJhbnRlIGVsIGN1bHRvIiwgY2FwdGlvbjogIkVuIG9yYWNpw7NuIiB9LAogICAgICB7IHNyYzogImFzc2V0cy9mb3Rvcy1yZWFsZXMvZm90by01LmpwZyIsIGFsdDogIkdydXBvIGRlIGxhIGNvbmdyZWdhY2nDs24gZGUgZXNwYWxkYXMgYSBsYSBvcmlsbGEgZGVsIHLDrW8gY29uIGNhbWlzZXRhcyBxdWUgZGljZW4gU2FudGlmaWNhZG9zIiwgY2FwdGlvbjogIlNhbnRpZmljYWRvcyBwYXJhIHBlcm1hbmVjZXIiIH0sCiAgICAgIHsgc3JjOiAiYXNzZXRzL2ZvdG9zLXJlYWxlcy9mb3RvLTYuanBnIiwgYWx0OiAiQmF1dGlzbW8gZW4gZWwgcsOtbzogbGEgY29uZ3JlZ2FjacOzbiBjZWxlYnJhbmRvIGRlbnRybyBkZWwgYWd1YSIsIGNhcHRpb246ICJCYXV0aXNtb3M6IHVuIHRpZW1wbyBkZSBnb3pvIiB9LAogICAgICB7IHNyYzogImFzc2V0cy9mb3Rvcy1yZWFsZXMvZm90by03LmpwZyIsIGFsdDogIkNpbmNvIHBlcnNvbmFzIGRlIGxhIGNvbmdyZWdhY2nDs24gZGUgZXNwYWxkYXMgY29udGVtcGxhbmRvIGVsIHLDrW8iLCBjYXB0aW9uOiAiVW5hIGZhbWlsaWEgZW4gZWwgcsOtbyIgfQogICAgXQogIH0sCgogIGNvbnRhY3RvOiB7CiAgICB0aXR1bG86ICJWaXPDrXRhbm9zIiwgLy8gc3RyaW5nCiAgICBkaXJlY2Npb246ICJEaWFnb25hbCAyOSAjMzItNjUsIFNhbnRhIEx1Y8OtYSIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUKICAgIG1hcGFVcmw6ICIiLCAvLyBzdHJpbmcg4oCUIFBMQUNFSE9MREVSIChlbWJlZCBvIGVubGFjZSBkZWwgbWFwYTsgZWwgRnJvbnRlbmQgb2N1bHRhIGVsIG1hcGEgc2kgZXN0w6EgdmFjw61vKSDigJQgVE9ETyhlcXVpcG8pCiAgICB3aGF0c2FwcDogIis1NyAzMTAgNjUyIDY5NTAiLCAvLyBzdHJpbmcg4oCUIFJFQUwg4pyFIChpZMOpbnRpY28gYSBzaXRpby53aGF0c2FwcCkKICAgIGZvcm11bGFyaW86IGZhbHNlIC8vIGJvb2xlYW4g4oCUIGRlY2lzacOzbiBHYXRlIDE6IHNvbG8gV2hhdHNBcHAsIHNpbiBmb3JtdWxhcmlvCiAgfSwKCiAgZm9vdGVyOiB7CiAgICB2ZXJzaWN1bG9Db3J0bzogIkxvcyBxdWUgY29uZsOtYW4gZW4gSmVob3bDoSBzb24gY29tbyBlbCBtb250ZSBkZSBTaW9uLCBxdWUgbm8gc2UgbXVldmUsIHNpbm8gcXVlIHBlcm1hbmVjZSBwYXJhIHNpZW1wcmUuIOKAlCBTYWxtbyAxMjU6MSIsIC8vIHN0cmluZyDigJQgUkVBTCDinIUgKFNhbG1vIDEyNToxIGNvbXBsZXRvLCBSVlIxOTYwKQogICAgY3JlZGl0b3M6ICLCqSAyMDI2IElnbGVzaWEgTW9udGUgZGUgU2lvbiIgLy8gc3RyaW5nCiAgfQp9Owo="></script>
 <script>
 (function () {
   'use strict';
@@ -745,9 +787,13 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
     galeria: {
       titulo: 'Nuestra familia',
       imagenes: [
-        { src: 'assets/fotos-reales/foto-familia-1.jpg', alt: 'Jóvenes de la congregación adorando con las manos levantadas', caption: 'Adorando juntos' },
-        { src: 'assets/fotos-reales/foto-familia-2.jpg', alt: 'Jóvenes adorando con los ojos cerrados y las manos en alto', caption: 'Una familia en adoración' },
-        { src: 'assets/fotos-reales/foto-familia-3.jpg', alt: 'Toda la congregación adorando con las manos levantadas', caption: 'Juntos en su presencia' }
+        { src: 'assets/fotos-nuevas/foto-1.jpg', alt: 'La pastora predicando en el púlpito bajo luz azul, frente al pendón de Monte de Sion', caption: 'La Palabra en el púlpito' },
+        { src: 'assets/fotos-nuevas/foto-2.jpg', alt: 'La pastora predicando con el micrófono durante el culto', caption: 'Ministrando con poder' },
+        { src: 'assets/fotos-nuevas/foto-3.jpg', alt: 'Dos mujeres de la congregación adorando con las manos levantadas bajo luz azul', caption: 'Adoración en su presencia' },
+        { src: 'assets/fotos-nuevas/foto-4.jpg', alt: 'Una mujer de la congregación sentada en oración durante el culto', caption: 'En oración' },
+        { src: 'assets/fotos-nuevas/foto-5.jpg', alt: 'Grupo de la congregación de espaldas a la orilla del río con camisetas que dicen Santificados', caption: 'Santificados para permanecer' },
+        { src: 'assets/fotos-nuevas/foto-6.jpg', alt: 'Bautismo en el río: la congregación celebrando dentro del agua', caption: 'Bautismos: un tiempo de gozo' },
+        { src: 'assets/fotos-nuevas/foto-7.jpg', alt: 'Cinco personas de la congregación de espaldas contemplando el río', caption: 'Una familia en el río' }
       ]
     },
     contacto: { titulo: 'Visítanos', direccion: 'Diagonal 29 #32-65, Santa Lucia', whatsapp: '+57 310 652 6950', formulario: false },
@@ -770,6 +816,13 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
   el('wa-float').href = waHref;
   el('contacto-wa').href = waHref;
   el('contacto-wa-numero').textContent = T(contacto.whatsapp, DEF.contacto.whatsapp);
+  var footerWa = el('footer-wa'); if (footerWa) footerWa.href = waHref;
+
+  /* ---------- Facebook oficial ---------- */
+  var FB_URL = 'https://www.facebook.com/people/Ministerio-apostólico-y-profético-Monte-de-Sión/61580078036491/';
+  var fbUrl = T(sitio.facebook, FB_URL);
+  var fbContacto = el('contacto-fb'); if (fbContacto) fbContacto.href = fbUrl;
+  var fbFooter = el('footer-fb'); if (fbFooter) fbFooter.href = fbUrl;
 
   /* ---------- NAV ---------- */
   var NAV = [
@@ -877,7 +930,7 @@ footer { background: linear-gradient(180deg, rgba(11,22,40,.62) 0, rgba(11,22,40
   var imgs = (galeria.imagenes && galeria.imagenes.length) ? galeria.imagenes : DEF.galeria.imagenes;
   var anillo = el('galeria-anillo');
   if (anillo) {
-    anillo.innerHTML = imgs.slice(0, 3).map(function (g, i) {
+    anillo.innerHTML = imgs.map(function (g, i) {
       var src = asset(g.src), alt = T(g.alt, 'TODO(equipo): texto alternativo');
       var cap = T(g.caption, '');
       return '<figure class="carrusel3d-item" style="--i:' + i + '">' +
